@@ -17,17 +17,17 @@ class MallocMetaData
 public:
     bool free = false;
     size_t size;
-    MallocMetaData *next;
-    MallocMetaData *prev;
+    MallocMetaData *next = NULL;
+    MallocMetaData *prev = NULL;
     void *data_ptr = nullptr;
     MallocMetaData(size_t size) : size(size);
 };
 
 MallocMetaData *_find_slot(size_t size)
 {
-    for (MallocMetaData iter = LINK_FREE_START; i != LINK_FREE_END; iter = iter->next)
+    for (MallocMetaData *iter = LINK_FREE_START; i != LINK_FREE_END; iter = iter->next)
     {
-        if (iter->size <= size)
+        if (iter->size <= size && iter->free == true)
         {
             return iter;
         }
@@ -37,6 +37,16 @@ MallocMetaData *_find_slot(size_t size)
 
 void _remove_node_from_link(MallocMetaData *node)
 {
+    if (node == LINK_FREE_START)
+    {
+        LINK_FREE_START = node->next;
+        return;
+    }
+    if (node == LINK_USED_START)
+    {
+        LINK_USED_START = node->next;
+        return;
+    }
     MallocMetaData *temp1 = node->prev;
     temp1->next = node->next;
 }
@@ -55,7 +65,7 @@ void _insert_data_to_used_link(MallocMetaData *node)
 
 smalloc(size_t size)
 {
-    if (size == 0 || size < BIG_NUM)
+    if (size == 0 || size > BIG_NUM)
     {
         return NULL;
     }
@@ -76,11 +86,22 @@ smalloc(size_t size)
 
     slot->free = false;
     _remove_node_from_link(slot);
+    _insert_data_to_used_link(ptr);
     return slot + _size_meta_data();
 }
 
 void *scalloc(size_t num, size_t size)
 {
+    if (size == 0 || size * num > BIG_NUM)
+    {
+        return nullptr
+    }
+    void *ptr = smalloc(size * num);
+    if (ptr == NULL)
+    {
+        return NULL
+    };
+    memset(ptr, 0, size * num);
 }
 
 void sfree(void *p)
@@ -89,6 +110,18 @@ void sfree(void *p)
 
 void *srealloc(void *oldp, size_t size)
 {
+    MallocMetaData *meta = oldp - _size_meta_data();
+    if (meta->size >= size)
+    {
+        //now what?
+        return oldp;
+    }
+    void *ptr = smalloc(size);
+    if (ptr == NULL)
+    {
+        return NULL
+    };
+    return memcpy(ptr, oldp, size);
 }
 
 size_t _num_free_blocks()
