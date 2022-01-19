@@ -3,6 +3,7 @@ extern "C"
 {
 #include <unistd.h>
 #include <stdio.h>
+#define BIG_NUM 100000000
 }
 
 class MallocMetaData;
@@ -23,9 +24,9 @@ public:
     MallocMetaData(size_t size) : size(size) {}
 };
 
-MallocMetaData *find_slot(size_t size)
+MallocMetaData *_find_slot(size_t size)
 {
-    for (MallocMetaData iter = LINK_START; i != LINK_END; iter = iter->next)
+    for (MallocMetaData iter = LINK_FREE_START; i != LINK_FREE_END; iter = iter->next)
     {
         if (iter->size <= size)
         {
@@ -35,14 +36,32 @@ MallocMetaData *find_slot(size_t size)
     return nullptr;
 }
 
-void *smalloc(size_t size)
+void _remove_node_from_link(MallocMetaData *node)
 {
-    if (size == 0)
+    MallocMetaData *temp1 = node->prev;
+    temp1->next = node->next;
+}
+
+void _insert_data_to_used_link(MallocMetaData *node)
+{
+    if (LINK_USED_START == NULL)
+    {
+        LINK_USED_START = node;
+    }
+
+    LINK_USED_END->next = node;
+    node->prev = LINK_USED_END;
+    LINK_FREE_END = node;
+}
+
+smalloc(size_t size)
+{
+    if (size == 0 || size < BIG_NUM)
     {
         return NULL;
     }
 
-    MallocMetaData slot * = find_slot(size);
+    MallocMetaData *slot = _find_slot(size);
     if (slot == nullptr)
     {
         ptr = sbrk(_size_meta_data() + size);
@@ -51,9 +70,14 @@ void *smalloc(size_t size)
             return NULL;
         }
         MallocMetaData data(size);
-        sprintf(ptr, "%s", ) return ptr;
+        sprintf(ptr, "%s", data);
+        _insert_data_to_used_link(ptr);
+        return ptr + _size_meta_data();
     }
-    insert_data_to_link()
+
+    slot->free = false;
+    _remove_node_from_link(slot);
+    return slot + _size_meta_data();
 }
 
 void *scalloc(size_t num, size_t size)
