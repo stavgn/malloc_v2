@@ -26,14 +26,14 @@ public:
 
 MallocMetaData *_find_slot(size_t size)
 {
-    for (MallocMetaData iter = LINK_FREE_START; i != LINK_FREE_END; iter = iter->next)
+    for (MallocMetaData *iter = LINK_FREE_START; iter != NULL; iter = iter->next)
     {
         if (iter->size <= size)
         {
             return iter;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 void _remove_node_from_link(MallocMetaData *node)
@@ -86,6 +86,41 @@ void *scalloc(size_t num, size_t size)
 
 void sfree(void *p)
 {
+    if (p==NULL)
+    {
+        return;
+    }
+    MallocMetaData *meta = (MallocMetaData *)p;
+    meta--; // now points to metadata
+    if(meta->free)
+    {
+        return;
+    }
+
+    meta->free = true;
+    _remove_node_from_link(meta);
+    MallocMetaData *new_spot = _find_slot(meta->size);
+    if(new_spot == NULL)
+    {
+        meta->prev = LINK_FREE_END;
+        LINK_FREE_END->next = meta;
+        meta->next = NULL;
+        LINK_FREE_END = meta;
+    }
+    
+    else if(new_spot == LINK_FREE_START)
+    {
+        meta->next = LINK_FREE_START;
+        LINK_FREE_START->prev = meta;
+        meta->prev = NULL;
+        LINK_FREE_START = meta;
+    }
+    else{
+        meta->prev = new_spot->prev;
+        new_spot->prev->next = meta;
+        meta->next = new_spot;
+    }
+
 }
 
 void *srealloc(void *oldp, size_t size)
