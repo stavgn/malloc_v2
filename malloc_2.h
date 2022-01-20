@@ -17,8 +17,12 @@ public:
     MallocMetaData(size_t size) : size(size) {}
 };
 
+class _init
+{
+    public:
+    _init();
+};
 
-void _init();
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
 size_t _num_free_blocks();

@@ -6,12 +6,15 @@ MallocMetaData LINK_FREE_END(0);
 MallocMetaData LINK_USED_START(0);
 MallocMetaData LINK_USED_END(0);
 
-bool was_int = false;
+bool was_init = false;
+_init init_malloc;
 
-void _init()
+_init::_init()
 {
-    if(!was_int)
+    if(was_init)
     {
+        return;
+    }
     LINK_FREE_START.prev = NULL;
     LINK_FREE_END.next = NULL;
     LINK_FREE_START.next = &LINK_FREE_END;
@@ -21,15 +24,14 @@ void _init()
     LINK_USED_END.next = NULL;
     LINK_USED_START.next = &LINK_USED_END;
     LINK_USED_END.prev = &LINK_USED_START;
-    was_int = true;
-    }
+    was_init = true;
 }
 
 size_t __num_of_nodes(MallocMetaData *list_head)
 {
     size_t counter = 0;
-    MallocMetaData *iter = list_head;
-    for (;((iter != &LINK_FREE_END) || (iter != &LINK_USED_END)); iter = iter->next)
+    MallocMetaData *iter = list_head->next;
+    for (;((iter != &LINK_FREE_END) && (iter != &LINK_USED_END)); iter = iter->next)
     {
         counter++;
     }
@@ -38,8 +40,8 @@ size_t __num_of_nodes(MallocMetaData *list_head)
 size_t __num_of_byts_in_list(MallocMetaData *list_head)
 {
     size_t counter = 0;
-    MallocMetaData *iter = list_head;
-    for (; ((iter != &LINK_FREE_END) || (iter != &LINK_USED_END)); iter = iter->next)
+    MallocMetaData *iter = list_head->next;
+    for (; ((iter != &LINK_FREE_END) && (iter != &LINK_USED_END)); iter = iter->next)
     {
         counter += iter->size;
     }
