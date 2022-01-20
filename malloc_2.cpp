@@ -1,16 +1,35 @@
 #include "malloc_2.h"
 
-MallocMetaData *LINK_FREE_START = NULL;
-MallocMetaData *LINK_FREE_END = NULL;
+MallocMetaData LINK_FREE_START(0);
+MallocMetaData LINK_FREE_END(0);
 
-MallocMetaData *LINK_USED_START = NULL;
-MallocMetaData *LINK_USED_END = NULL;
+MallocMetaData LINK_USED_START(0);
+MallocMetaData LINK_USED_END(0);
+
+bool was_int = false;
+
+void _init()
+{
+    if(!was_int)
+    {
+    LINK_FREE_START.prev = NULL;
+    LINK_FREE_END.next = NULL;
+    LINK_FREE_START.next = &LINK_FREE_END;
+    LINK_FREE_END.prev = &LINK_FREE_START;
+
+    LINK_USED_START.prev = NULL;
+    LINK_USED_END.next = NULL;
+    LINK_USED_START.next = &LINK_USED_END;
+    LINK_USED_END.prev = &LINK_USED_START;
+    was_int = true;
+    }
+}
 
 size_t __num_of_nodes(MallocMetaData *list_head)
 {
     size_t counter = 0;
     MallocMetaData *iter = list_head;
-    for (; iter != NULL; iter = iter->next)
+    for (;((iter != &LINK_FREE_END) || (iter != &LINK_USED_END)); iter = iter->next)
     {
         counter++;
     }
@@ -20,7 +39,7 @@ size_t __num_of_byts_in_list(MallocMetaData *list_head)
 {
     size_t counter = 0;
     MallocMetaData *iter = list_head;
-    for (; iter != NULL; iter = iter->next)
+    for (; ((iter != &LINK_FREE_END) || (iter != &LINK_USED_END)); iter = iter->next)
     {
         counter += iter->size;
     }
@@ -29,22 +48,22 @@ size_t __num_of_byts_in_list(MallocMetaData *list_head)
 
 size_t _num_free_blocks()
 {
-    return __num_of_nodes(LINK_FREE_START);
+    return __num_of_nodes(&LINK_FREE_START);
 }
 
 size_t _num_free_bytes()
 {
-    return __num_of_byts_in_list(LINK_FREE_START);
+    return __num_of_byts_in_list(&LINK_FREE_START);
 }
 
 size_t _num_allocated_blocks()
 {
-    return __num_of_nodes(LINK_FREE_START) + __num_of_nodes(LINK_USED_START);
+    return __num_of_nodes(&LINK_FREE_START) + __num_of_nodes(&LINK_USED_START);
 }
 
 size_t _num_allocated_bytes()
 {
-    return __num_of_byts_in_list(LINK_FREE_START) + __num_of_byts_in_list(LINK_USED_START);
+    return __num_of_byts_in_list(&LINK_FREE_START) + __num_of_byts_in_list(&LINK_USED_START);
 }
 
 size_t _size_meta_data()
@@ -60,7 +79,7 @@ size_t _num_meta_data_bytes()
 
 MallocMetaData *_find_slot(size_t size)
 {
-    for (MallocMetaData *iter = LINK_FREE_START; iter != NULL; iter = iter->next)
+    for (MallocMetaData *iter = &LINK_FREE_START; iter != &LINK_FREE_END; iter = iter->next)
     {
         if (size <= iter->size && iter->free == true)
         {
@@ -72,70 +91,35 @@ MallocMetaData *_find_slot(size_t size)
 
 void _remove_node_from_link(MallocMetaData *node)
 {
-    if (node == LINK_FREE_START)
-    {
-        LINK_FREE_START = node->next;
-        if (LINK_FREE_START != NULL)
-        {
-            LINK_FREE_START->prev = NULL;
-        }
-    }
-    if (node == LINK_USED_START)
-    {
-        LINK_USED_START = node->next;
-        if (LINK_USED_START != NULL)
-        {
-            LINK_USED_START->prev = NULL;
-        }
-    }
-    if (node == LINK_FREE_END)
-    {
-        LINK_FREE_END = node->prev;
-        if (LINK_FREE_END != NULL)
-        {
-            LINK_FREE_END->next = NULL;
-        }
-    }
-    if (node == LINK_USED_END)
-    {
-        LINK_USED_END = node->prev;
-        if (LINK_USED_END != NULL)
-        {
-            LINK_USED_END->next = NULL;
-        }
-    }
-    MallocMetaData *temp1 = node->prev;
-    if (temp1 != NULL)
-    {
-        temp1->next = node->next;
-    }
-    MallocMetaData *temp2 = node->next;
-    if (temp2 != NULL)
-    {
-        temp2->prev = node->prev;
-    }
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
 }
 
 void _insert_data_to_used_link(MallocMetaData *node)
 {
-    if (LINK_USED_START == NULL)
+    MallocMetaData *before_last  = LINK_USED_END.prev;
+    before_last->next = node;
+    LINK_USED_END.prev = node;
+    node->prev = before_last;
+    node->next = &LINK_USED_END;
+}
+void _insert_data_to_free_link(MallocMetaData *node)
+{
+    MallocMetaData *new_spot = _find_slot(node->size);
+    if (new_spot == NULL) //list is empty 
     {
-        LINK_USED_START = node;
+        new_spot = &LINK_FREE_END;
     }
-    if (LINK_USED_END == NULL)
-    {
-        LINK_USED_END = node;
-    }
-    else
-    {
-        LINK_USED_END->next = node;
-        node->prev = LINK_USED_END;
-        LINK_USED_END = node;
-    }
+    node->prev = new_spot->prev;
+    node->next = new_spot;
+    new_spot->prev->next = node;
+    new_spot->prev = node;
+
 }
 
 void *smalloc(size_t size)
 {
+    _init();
     void *ptr;
     if (size == 0 || size > BIG_NUM)
     {
@@ -192,34 +176,7 @@ void sfree(void *p)
 
     meta->free = true;
     _remove_node_from_link(meta);
-    MallocMetaData *new_spot = _find_slot(meta->size);
-    if (new_spot == NULL)
-    {
-        meta->prev = LINK_FREE_END;
-        if (LINK_FREE_END != NULL)
-        {
-            LINK_FREE_END->next = meta;
-        }
-        meta->next = NULL;
-        LINK_FREE_END = meta;
-    }
-
-    if (new_spot == LINK_FREE_START)
-    {
-        meta->next = LINK_FREE_START;
-        if (LINK_FREE_START != NULL)
-        {
-            LINK_FREE_START->prev = meta;
-        }
-        meta->prev = NULL;
-        LINK_FREE_START = meta;
-    }
-    else
-    {
-        meta->prev = new_spot->prev;
-        new_spot->prev->next = meta;
-        meta->next = new_spot;
-    }
+    _insert_data_to_free_link(meta);
 }
 
 void *srealloc(void *oldp, size_t size)
@@ -243,6 +200,8 @@ void *srealloc(void *oldp, size_t size)
     sfree(oldp);
     return ptr;
 }
+
+
 // int  main() {return 0;}
 // int main()
 // {
