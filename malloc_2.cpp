@@ -1,5 +1,11 @@
 #include "malloc_2.h"
 
+MallocMetaData *LINK_FREE_START = NULL;
+MallocMetaData *LINK_FREE_END = NULL;
+
+MallocMetaData *LINK_USED_START = NULL;
+MallocMetaData *LINK_USED_END = NULL;
+
 size_t __num_of_nodes(MallocMetaData *list_head)
 {
     size_t counter = 0;
@@ -237,7 +243,7 @@ void *srealloc(void *oldp, size_t size)
     sfree(oldp);
     return ptr;
 }
-
+// int  main() {return 0;}
 // int main()
 // {
 //     char *buf = (char *)smalloc(100);

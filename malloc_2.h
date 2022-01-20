@@ -17,11 +17,7 @@ public:
     MallocMetaData(size_t size) : size(size) {}
 };
 
-MallocMetaData *LINK_FREE_START = NULL;
-MallocMetaData *LINK_FREE_END = NULL;
 
-MallocMetaData *LINK_USED_START = NULL;
-MallocMetaData *LINK_USED_END = NULL;
 
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
