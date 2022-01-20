@@ -1,31 +1,4 @@
-
-extern "C"
-{
-}
-#include <unistd.h>
-#include <cstdio>
-#include <cstdio>
-#include <cstring>
-#define BIG_NUM 100000000
-using namespace std;
-class MallocMetaData;
-
-MallocMetaData *LINK_FREE_START = NULL;
-MallocMetaData *LINK_FREE_END = NULL;
-
-MallocMetaData *LINK_USED_START = NULL;
-MallocMetaData *LINK_USED_END = NULL;
-
-class MallocMetaData
-{
-public:
-    bool free = false;
-    size_t size;
-    MallocMetaData *next = NULL;
-    MallocMetaData *prev = NULL;
-    void *data_ptr = nullptr;
-    MallocMetaData(size_t size) : size(size) {}
-};
+#include "malloc_2.h"
 
 size_t __num_of_nodes(MallocMetaData *list_head)
 {
@@ -195,7 +168,7 @@ void *scalloc(size_t num, size_t size)
     {
         return NULL;
     }
-    memset(ptr, 0, size * num);
+    return memset(ptr, 0, size * num);
 }
 
 void sfree(void *p)
@@ -265,22 +238,22 @@ void *srealloc(void *oldp, size_t size)
     return ptr;
 }
 
-int main()
-{
-    char *buf = (char *)smalloc(100);
-    scanf("%s", buf);
-    printf("Typed:%s\n", buf);
-    sfree((void *)buf);
+// int main()
+// {
+//     char *buf = (char *)smalloc(100);
+//     scanf("%s", buf);
+//     printf("Typed:%s\n", buf);
+//     sfree((void *)buf);
 
-    char *buf2 = (char *)smalloc(10);
-    if (buf == buf2)
-    {
-        printf("Yes!\n");
-    }
-    scanf("%s", buf);
-    buf[strlen(buf)] = '0';
-    printf("Typed:%s\n", buf);
-    printf("Typed:%s\n", buf + 5);
-    sfree((void *)buf);
-    return 0;
-}
+//     char *buf2 = (char *)smalloc(10);
+//     if (buf == buf2)
+//     {
+//         printf("Yes!\n");
+//     }
+//     scanf("%s", buf);
+//     buf[strlen(buf)] = '0';
+//     printf("Typed:%s\n", buf);
+//     printf("Typed:%s\n", buf + 5);
+//     sfree((void *)buf);
+//     return 0;
+// }
