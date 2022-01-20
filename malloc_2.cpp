@@ -83,7 +83,7 @@ MallocMetaData *_find_slot(size_t size)
 {
     for (MallocMetaData *iter = LINK_FREE_START; iter != NULL; iter = iter->next)
     {
-        if (iter->size <= size && iter->free == true)
+        if (size <= iter->size && iter->free == true)
         {
             return iter;
         }
@@ -100,7 +100,6 @@ void _remove_node_from_link(MallocMetaData *node)
         {
             LINK_FREE_START->prev = NULL;
         }
-        return;
     }
     if (node == LINK_USED_START)
     {
@@ -109,7 +108,6 @@ void _remove_node_from_link(MallocMetaData *node)
         {
             LINK_USED_START->prev = NULL;
         }
-        return;
     }
     if (node == LINK_FREE_END)
     {
@@ -118,7 +116,6 @@ void _remove_node_from_link(MallocMetaData *node)
         {
             LINK_FREE_END->next = NULL;
         }
-        return;
     }
     if (node == LINK_USED_END)
     {
@@ -127,12 +124,17 @@ void _remove_node_from_link(MallocMetaData *node)
         {
             LINK_USED_END->next = NULL;
         }
-        return;
     }
     MallocMetaData *temp1 = node->prev;
-    temp1->next = node->next;
+    if (temp1 != NULL)
+    {
+        temp1->next = node->next;
+    }
     MallocMetaData *temp2 = node->next;
-    temp2->prev = node->prev;
+    if (temp2 != NULL)
+    {
+        temp2->prev = node->prev;
+    }
 }
 
 void _insert_data_to_used_link(MallocMetaData *node)
@@ -179,7 +181,7 @@ void *smalloc(size_t size)
     slot->free = false;
     _remove_node_from_link(slot);
     _insert_data_to_used_link((MallocMetaData *)ptr);
-    return slot + _size_meta_data();
+    return slot + 1;
 }
 
 void *scalloc(size_t num, size_t size)
@@ -223,7 +225,7 @@ void sfree(void *p)
         LINK_FREE_END = meta;
     }
 
-     if (new_spot == LINK_FREE_START)
+    if (new_spot == LINK_FREE_START)
     {
         meta->next = LINK_FREE_START;
         if (LINK_FREE_START != NULL)
@@ -270,10 +272,15 @@ int main()
     printf("Typed:%s\n", buf);
     sfree((void *)buf);
 
-    buf = (char *)smalloc(10);
+    char *buf2 = (char *)smalloc(10);
+    if (buf == buf2)
+    {
+        printf("Yes!\n");
+    }
     scanf("%s", buf);
+    buf[strlen(buf)] = '0';
     printf("Typed:%s\n", buf);
-    printf("Typed:%s\n", buf+11);
+    printf("Typed:%s\n", buf + 5);
     sfree((void *)buf);
     return 0;
 }

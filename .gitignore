@@ -1,3 +1,4 @@
 .vscode/*
 a.out
 malloc_2
+.gitignore
