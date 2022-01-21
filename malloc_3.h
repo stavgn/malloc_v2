@@ -1,41 +1,46 @@
 #ifndef MALLOC_3_H
 #define MALLOC_3_H
+
+#include <unistd.h>
+#include <cstdio>
+#include <cstdio>
+#include <cstring>
 #define HIST_SIZE 128
 
 #include <unistd.h>
-
-class MetaDataListNode
-{
-    MallocMetaData *data;
-    MetaDataListNode *prev;
-    MetaDataListNode *next;
-};
-
-class MetaDataList
-{
-public:
-    MetaDataListNode first;
-    MetaDataListNode last;
-    MetaDataList();
-    void insert(MallocMetaData *mem);
-    void remove(MallocMetaData *mem);
-    size_t number_of_elenments();
-    size_t total_size();
-};
 
 class MallocMetaData
 {
 public:
     size_t size;
     bool free;
+    MallocMetaData *next_s;
+    MallocMetaData *prev_s;
+    MallocMetaData *next_l;
+    MallocMetaData *prev_l;
     MallocMetaData(size_t size = 0);
 };
+
+class MetaDataList
+{
+public:
+    char type;
+    MallocMetaData first;
+    MallocMetaData last;
+    MetaDataList(char type='s');
+    void insert(MallocMetaData *mem);
+    void remove(MallocMetaData *mem);
+    size_t number_of_elements();
+    size_t total_size();
+};
+
+
 
 class Histogram
 {
 public:
     MetaDataList hist[HIST_SIZE];
-    Histogram(int size);
+    Histogram();
     void insert(MallocMetaData *mem);
     void remove(MallocMetaData *mem);
 };
