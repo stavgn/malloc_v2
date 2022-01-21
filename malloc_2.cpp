@@ -27,6 +27,15 @@ _init::_init()
     was_init = true;
 }
 
+void __print_free_list()
+{
+    for (MallocMetaData *iter=LINK_FREE_START.next;iter != &LINK_FREE_END; iter = iter->next)
+    {
+        printf("size:%lu\n",iter->size);
+    }
+    
+}
+
 size_t __num_of_nodes(MallocMetaData *list_head)
 {
     size_t counter = 0;
@@ -81,7 +90,7 @@ size_t _num_meta_data_bytes()
 
 MallocMetaData *_find_slot(size_t size)
 {
-    for (MallocMetaData *iter = &LINK_FREE_START; iter != &LINK_FREE_END; iter = iter->next)
+    for (MallocMetaData *iter = LINK_FREE_START.next; iter != &LINK_FREE_END; iter = iter->next)
     {
         if (size <= iter->size && iter->free == true)
         {
@@ -107,11 +116,11 @@ void _insert_data_to_used_link(MallocMetaData *node)
 }
 void _insert_data_to_free_link(MallocMetaData *node)
 {
-    MallocMetaData *new_spot = _find_slot(node->size);
-    if (new_spot == NULL) //list is empty 
-    {
-        new_spot = &LINK_FREE_END;
-    }
+    MallocMetaData *new_spot=LINK_FREE_START.next;
+   while((new_spot != & LINK_FREE_END) && (new_spot < node))
+   {
+       new_spot = new_spot->next;
+   }
     node->prev = new_spot->prev;
     node->next = new_spot;
     new_spot->prev->next = node;

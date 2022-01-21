@@ -23,6 +23,7 @@ class _init
     _init();
 };
 
+void __print_free_list();
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
 size_t _num_free_blocks();
