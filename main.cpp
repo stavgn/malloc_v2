@@ -278,7 +278,6 @@ void test_reuse_after_free()
     for (int i = 0; i < 7; ++i)
         DATA[3][i] = GARBAGE;
 
-__print_free_list();
     /* malloc should reuse block 1 then 3: */
     p[1] = static_cast<byte *>(smalloc(sizeof(byte) * 5));
     reuse_expected_block(expected, BLOCK_SIZES[1]);

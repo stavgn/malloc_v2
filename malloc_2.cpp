@@ -154,7 +154,7 @@ void *smalloc(size_t size)
 
     slot->free = false;
     _remove_node_from_link(slot);
-    _insert_data_to_used_link((MallocMetaData *)ptr);
+    _insert_data_to_used_link(slot);
     return slot + 1;
 }
 
@@ -192,9 +192,13 @@ void sfree(void *p)
 
 void *srealloc(void *oldp, size_t size)
 {
-    if ((oldp == NULL) || (size == 0) || (size > BIG_NUM))
+    if ((size == 0) || (size > BIG_NUM))
     {
         return NULL;
+    }
+    if (oldp == NULL)
+    {
+        return smalloc(size);
     }
     MallocMetaData *meta = (MallocMetaData *)oldp - 1;
     if (meta->size >= size)
@@ -206,7 +210,8 @@ void *srealloc(void *oldp, size_t size)
     if (ptr == NULL)
     {
         return NULL;
-    };
+    }
+    
     memcpy(ptr, oldp, size);
     sfree(oldp);
     return ptr;
