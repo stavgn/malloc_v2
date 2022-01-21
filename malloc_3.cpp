@@ -34,12 +34,11 @@ MetaDataList::MetaDataList(char type) : type(type)
         last.next_l = NULL;
         last.prev_l = &first;
     }
-
 }
 
 void MetaDataList::insert(MallocMetaData *mem)
 {
-    MallocMetaData *slot;
+    MallocMetaData *slot = &last;
     if (type == 's')
     {
         for (MallocMetaData *iter = first.next_s; (iter != &last); iter = iter->next_s)
@@ -90,4 +89,46 @@ MallocMetaData::MallocMetaData(size_t size) : size(size)
 {
 }
 
-Histogram::Histogram() {}
+size_t MetaDataList::number_of_elements()
+{
+    size_t counter = 0;
+    if (type == 's')
+    {
+        for (MallocMetaData *iter = first.next_s; iter != &last; iter = iter->next_s)
+        {
+            counter++;
+        }
+    }
+    else if (type == 'l')
+    {
+        for (MallocMetaData *iter = first.next_l; iter != &last; iter = iter->next_l)
+        {
+            counter++;
+        }
+    }
+    return counter;
+}
+size_t MetaDataList::number_of_bytes()
+{
+    size_t counter = 0;
+    if (type == 's')
+    {
+        for (MallocMetaData *iter = first.next_s; iter != &last; iter = iter->next_s)
+        {
+            counter+= iter->size;
+        }
+    }
+    else if (type == 'l')
+    {
+        for (MallocMetaData *iter = first.next_l; iter != &last; iter = iter->next_l)
+        {
+            counter+= iter->size;
+        }
+    }
+    return counter;
+}
+
+int main()
+{
+    MemoryManager mem;
+}

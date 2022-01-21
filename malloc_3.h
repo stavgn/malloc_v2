@@ -31,7 +31,7 @@ public:
     void insert(MallocMetaData *mem);
     void remove(MallocMetaData *mem);
     size_t number_of_elements();
-    size_t total_size();
+    size_t number_of_bytes();
 };
 
 
@@ -40,7 +40,7 @@ class Histogram
 {
 public:
     MetaDataList hist[HIST_SIZE];
-    Histogram();
+    Histogram() {}
     void insert(MallocMetaData *mem);
     void remove(MallocMetaData *mem);
 };
