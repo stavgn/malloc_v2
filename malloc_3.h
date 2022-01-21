@@ -2,22 +2,26 @@
 #define MALLOC_3_H
 #define HIST_SIZE 128
 
+#include <unistd.h>
+
 class MetaDataListNode
 {
     MallocMetaData *data;
     MetaDataListNode *prev;
     MetaDataListNode *next;
-}
+};
 
 class MetaDataList
 {
 public:
     MetaDataListNode first;
     MetaDataListNode last;
-    List();
-    insert(MallocMetaData *mem);
-    remove(MallocMetaData *mem);
-}
+    MetaDataList();
+    void insert(MallocMetaData *mem);
+    void remove(MallocMetaData *mem);
+    size_t number_of_elenments();
+    size_t total_size();
+};
 
 class MallocMetaData
 {
@@ -25,28 +29,29 @@ public:
     size_t size;
     bool free;
     MallocMetaData(size_t size = 0);
-}
+};
 
 class Histogram
 {
 public:
-    MallocMetaData hist[HIST_SIZE];
+    MetaDataList hist[HIST_SIZE];
     Histogram(int size);
-    insert(MallocMetaData *mem);
-    remove(MallocMetaData *mem);
-}
+    void insert(MallocMetaData *mem);
+    void remove(MallocMetaData *mem);
+};
 
 class MemoryManager
 {
 public:
     Histogram hist;
     MetaDataList heap;
-    MallocMetaData *mmap_list;
+    MetaDataList mmap_list;
+    size_t allocated_byte;
+    size_t allocated_blocks;
     MemoryManager();
-}
+};
 
-void
-__print_free_list();
+
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
 size_t _num_free_blocks();
