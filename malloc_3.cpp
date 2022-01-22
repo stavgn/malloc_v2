@@ -1,5 +1,7 @@
 #include "malloc_3.h"
 
+MemoryManager mm;
+
 MemoryManager::MemoryManager() : heap('l')
 {
     allocated_blocks = 0;
