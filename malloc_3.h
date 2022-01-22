@@ -5,7 +5,11 @@
 #include <cstdio>
 #include <cstdio>
 #include <cstring>
+#include <assert.h>
+
 #define HIST_SIZE 128
+#define MIN_SPLIT 128
+#define MIN_MMAP (128 * 1024) //128KB
 
 #include <unistd.h>
 
@@ -27,14 +31,12 @@ public:
     char type;
     MallocMetaData first;
     MallocMetaData last;
-    MetaDataList(char type='s');
+    MetaDataList(char type = 's');
     void insert(MallocMetaData *mem);
     void remove(MallocMetaData *mem);
     size_t number_of_elements();
     size_t number_of_bytes();
 };
-
-
 
 class Histogram
 {
@@ -43,6 +45,7 @@ public:
     Histogram() {}
     void insert(MallocMetaData *mem);
     void remove(MallocMetaData *mem);
+    MallocMetaData *search_block(size_t size);
 };
 
 class MemoryManager
@@ -53,10 +56,12 @@ public:
     MetaDataList mmap_list;
     size_t allocated_byte;
     size_t allocated_blocks;
+    MallocMetaData *wilderness;
     MemoryManager();
+    MallocMetaData *split(MallocMetaData *block,size_t size);
 };
 
-
+bool in_heap(MallocMetaData *block);
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
 size_t _num_free_blocks();
