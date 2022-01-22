@@ -9,19 +9,24 @@ MemoryManager::MemoryManager() : heap('l')
     wilderness = NULL;
 }
 
-MallocMetaData* MemoryManager::split(MallocMetaData *block,size_t size)
+MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
 {
-    assert((block->size-size-_size_meta_data()) >= MIN_SPLIT);
+    assert((block->size - size - _size_meta_data()) >= MIN_SPLIT);
     assert(size < block->size);
-    assert(in_heap(block));
+    assert(_in_heap(block));
     hist.remove(block);
     heap.remove(block);
 
-    MallocMetaData *new_block = (MallocMetaData*)((char*)(block + 1) + size); 
-    *new_block = MallocMetaData(block->size-size-_size_meta_data());
+    MallocMetaData *new_block = (MallocMetaData *)((char *)(block + 1) + size);
+    *new_block = MallocMetaData(block->size - size - _size_meta_data());
     block->size = size;
+    hist.insert(block);
+    heap.insert(block);
     hist.insert(new_block);
     heap.insert(new_block);
+
+    allocated_blocks++;
+    allocated_byte -= _size_meta_data();
     return block;
 }
 
@@ -177,10 +182,16 @@ size_t MetaDataList::number_of_bytes()
     return counter;
 }
 
-bool in_heap(MallocMetaData *block)
+bool _in_heap(MallocMetaData *block)
 {
     assert(block != NULL);
     return block->size < MIN_MMAP;
+}
+
+bool _shoul_split(MallocMetaData *block, size_t size)
+{
+    assert(block != NULL);
+    return (block->size - size - _size_meta_data() >= MIN_SPLIT);
 }
 
 size_t _size_meta_data()
@@ -189,9 +200,94 @@ size_t _size_meta_data()
     return size_of_block;
 }
 
+void *smalloc(size_t size)
+{
+    if ((size == 0) || (size > BIG_NUM))
+    {
+        return NULL;
+    }
+
+    MallocMetaData *block;
+
+    if (size >= MIN_MMAP)
+    {
+        block = (MallocMetaData *)mmap(NULL, size + _size_meta_data(), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        if (block == (MallocMetaData *)(-1))
+        {
+            return NULL;
+        }
+        *block = MallocMetaData(size);
+        mm.mmap_list.insert(block);
+        mm.allocated_blocks++;
+        mm.allocated_byte += size;
+        block->free = false;
+        return (void *)(block + 1);
+    }
+
+    block = mm.hist.search_block(size);
+    if (block != NULL)
+    {
+        if (_shoul_split(block, size))
+        {
+            block = mm.split(block, size);
+        }
+        mm.hist.remove(block);
+        mm.heap.remove(block);
+        block->free = false;
+        return (void *)(block + 1);
+    }
+
+    else if ((mm.wilderness != NULL) && (mm.wilderness->free))
+    {
+        assert(size > mm.wilderness->size);
+        size_t delta = size - mm.wilderness->size;
+        if (sbrk(delta) == (void *)(-1))
+        {
+            return NULL;
+        }
+        mm.hist.remove(mm.wilderness);
+        mm.wilderness->size = size;
+        mm.wilderness->free = false;
+        mm.allocated_byte += delta;
+        return (void *)(mm.wilderness + 1);
+    }
+    else
+    {
+        block = (MallocMetaData *)sbrk(_size_meta_data() + size);
+        if (block == (MallocMetaData *)(-1))
+        {
+            return NULL;
+        }
+        *block = MallocMetaData(size);
+        block->free = false;
+        mm.wilderness = block;
+        mm.allocated_blocks++;
+        mm.allocated_byte += size;
+        return (void *)(block + 1);
+    }
+}
+
+void *scalloc(size_t num, size_t size)
+{
+    if (size == 0 || size * num > BIG_NUM)
+    {
+        return NULL;
+    }
+    void *ptr = smalloc(size * num);
+    if (ptr == NULL)
+    {
+        return NULL;
+    }
+    return memset(ptr, 0, size * num);
+}
 
 int main()
 {
-    MemoryManager mem;
-    assert(0);
+    int* data = (int*)smalloc(100);
+    *data = 100;
+    int* data2 = (int*)smalloc(10000000);
+    *data2 = 100;
+    int *data3 = (int*)scalloc(50,sizeof(int));
+    printf("data:%d,data2:%d,data3[32]:%d\n",*data,*data2,data3[32]);
+
 }

@@ -2,11 +2,13 @@
 #define MALLOC_3_H
 
 #include <unistd.h>
+#include <assert.h>
+#include <sys/mman.h>
 #include <cstdio>
 #include <cstdio>
 #include <cstring>
-#include <assert.h>
 
+#define BIG_NUM 100000000
 #define HIST_SIZE 128
 #define MIN_SPLIT 128
 #define MIN_MMAP (128 * 1024) //128KB
@@ -61,7 +63,8 @@ public:
     MallocMetaData *split(MallocMetaData *block,size_t size);
 };
 
-bool in_heap(MallocMetaData *block);
+bool _shoul_split(MallocMetaData *block, size_t size);
+bool _in_heap(MallocMetaData *block);
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
 size_t _num_free_blocks();
