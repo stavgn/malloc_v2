@@ -29,7 +29,7 @@ void printMemory(void *start, bool onlyList) {
 	if (!onlyList) {
 		std::cout << "Printing Memory List\n";
 	}
-	while (current) {
+	while (current->size != 0) {
 		if (current->free) {
 			std::cout << "|F:" << current->size;
 		} else {

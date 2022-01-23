@@ -193,7 +193,7 @@ bool _in_heap(MallocMetaData *block)
 bool _shoul_split(MallocMetaData *block, size_t size)
 {
     assert(block != NULL);
-    return (block->size - size - _size_meta_data() >= MIN_SPLIT);
+    return ((size < block->size) && (block->size - size - _size_meta_data() >= MIN_SPLIT));
 }
 
 size_t _size_meta_data()
@@ -287,7 +287,7 @@ void sfree(void *p)
     }
     MallocMetaData *meta = (MallocMetaData *)p;
     meta--; // now points to metadata
-    
+
     if (_in_heap(meta))
     {
         mm.attempt_merge(meta);
@@ -321,7 +321,7 @@ MallocMetaData *MemoryManager::attempt_merge_left(MallocMetaData *meta, bool mar
 MallocMetaData *MemoryManager::attempt_merge_right(MallocMetaData *meta, bool mark_free)
 {
     MallocMetaData *merged = meta;
-    if (merged->next_l->free &&_validate_neighbors(merged, merged->next_l))
+    if (merged->next_l->free && _validate_neighbors(merged, merged->next_l))
     {
         merged = _merge_right(merged, mark_free);
     }
@@ -379,6 +379,20 @@ void *srealloc(void *oldp, size_t size)
     if (meta->size >= size)
     {
         return oldp;
+    }
+
+    if (!_in_heap(meta))
+    {
+        printf("I'm here!\n");
+        assert(size > MIN_MMAP);
+        void *ptr = smalloc(size); //should mmap
+        if (ptr == NULL)
+        {
+            return NULL;
+        }
+        memcpy(ptr, oldp, size);
+        sfree(oldp);
+        return ptr;
     }
 
     // attempt merge section start
