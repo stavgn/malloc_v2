@@ -72,6 +72,8 @@ MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free);
 MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free);
 bool _validate_neighbors(MallocMetaData *m1, MallocMetaData *m2);
 MallocMetaData *_make_free(MallocMetaData *meta);
+bool is_wilderness_in_reach_left(MallocMetaData *meta);
+bool is_wilderness_in_reach_right(MallocMetaData *meta);
 size_t _num_free_blocks();
 size_t _num_free_bytes();
 size_t _num_allocated_blocks();

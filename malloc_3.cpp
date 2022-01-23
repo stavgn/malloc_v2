@@ -389,9 +389,12 @@ void *srealloc(void *oldp, size_t size)
     {
         return oldp;
     }
+
     // attempt merge section start
+    bool w_l = is_wilderness_in_reach_left(meta);
+    bool w_r = is_wilderness_in_reach_right(meta);
     MallocMetaData *merged = meta;
-    if ((meta->prev_l->size + meta->size + _size_meta_data()) >= size && meta->prev_l->free)
+    if (((meta->prev_l->size + meta->size + _size_meta_data()) >= size && meta->prev_l->free) || w_l)
     {
         merged = mm.attempt_merge_left(merged, true);
     }
@@ -399,7 +402,7 @@ void *srealloc(void *oldp, size_t size)
     {
         merged = mm.attempt_merge_right(merged, true);
     }
-    else if ((meta->next_l->size + meta->prev_l->size + meta->size + 2* _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free)
+    else if (((meta->next_l->size + meta->prev_l->size + meta->size + 2 * _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free) || w_r)
     {
         merged = mm.attempt_merge(merged, true);
     }
@@ -412,6 +415,20 @@ void *srealloc(void *oldp, size_t size)
             merged = mm.split(merged, size);
         }
         merged->free = false;
+        mm.hist.remove(merged);
+        merged++;
+        memcpy((void *)merged, oldp, size);
+        return (void *)merged;
+    }
+    else if (mm.wilderness == merged)
+    {
+        size_t delta = size - mm.wilderness->size;
+        if (sbrk(delta) == (void *)(-1))
+        {
+            return NULL;
+        }
+        merged->free = false;
+        mm.wilderness->size += delta;
         mm.hist.remove(merged);
         merged++;
         memcpy((void *)merged, oldp, size);
@@ -434,6 +451,16 @@ MallocMetaData *_make_free(MallocMetaData *meta)
     meta->free = true;
     mm.hist.insert(meta);
     return meta;
+}
+
+bool is_wilderness_in_reach_left(MallocMetaData *meta)
+{
+    return mm.wilderness == meta && meta->prev_l->free;
+}
+
+bool is_wilderness_in_reach_right(MallocMetaData *meta)
+{
+    return mm.wilderness == meta->next_l && meta->next_l->free;
 }
 
 int main()
