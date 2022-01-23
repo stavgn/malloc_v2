@@ -4,8 +4,6 @@ MemoryManager mm;
 
 MemoryManager::MemoryManager() : heap('l')
 {
-    allocated_blocks = 0;
-    allocated_byte = 0;
     wilderness = NULL;
 }
 
@@ -26,8 +24,6 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
     hist.insert(new_block);
     heap.insert(new_block);
 
-    allocated_blocks++;
-    allocated_byte -= _size_meta_data();
 
     if (mm.wilderness == block)
     {
@@ -225,8 +221,6 @@ void *smalloc(size_t size)
         }
         *block = MallocMetaData(size);
         mm.mmap_list.insert(block);
-        mm.allocated_blocks++;
-        mm.allocated_byte += size;
         block->free = false;
         return (void *)(block + 1);
     }
@@ -255,7 +249,6 @@ void *smalloc(size_t size)
         mm.hist.remove(mm.wilderness);
         mm.wilderness->size = size;
         mm.wilderness->free = false;
-        mm.allocated_byte += delta;
         return (void *)(mm.wilderness + 1);
     }
     else
@@ -268,8 +261,6 @@ void *smalloc(size_t size)
         *block = MallocMetaData(size);
         block->free = false;
         mm.wilderness = block;
-        mm.allocated_blocks++;
-        mm.allocated_byte += size;
         mm.heap.insert(block);
         return (void *)(block + 1);
     }
@@ -399,7 +390,7 @@ void *srealloc(void *oldp, size_t size)
     {
         merged = mm.attempt_merge_right(merged, true);
     }
-    else if ((meta->next_l->size + meta->prev_l->size + meta->size + 2* _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free)
+    else if ((meta->next_l->size + meta->prev_l->size + meta->size + 2 * _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free)
     {
         merged = mm.attempt_merge(merged, true);
     }
@@ -436,6 +427,43 @@ MallocMetaData *_make_free(MallocMetaData *meta)
     return meta;
 }
 
+size_t _num_free_blocks()
+{
+    size_t counter = 0;
+    for (MallocMetaData *iter = mm.heap.first.next_l; iter != &mm.heap.last; iter = iter->next_l)
+    {
+        if (iter->free)
+        {
+            counter++;
+        }
+    }
+    return counter;
+}
+size_t _num_free_bytes()
+{
+    size_t counter = 0;
+    for (MallocMetaData *iter = mm.heap.first.next_l; iter != &mm.heap.last; iter = iter->next_l)
+    {
+        if (iter->free)
+        {
+            counter += iter->size;
+        }
+    }
+    return counter;
+}
+size_t _num_allocated_blocks()
+{
+    return mm.heap.number_of_elements() + mm.mmap_list.number_of_elements();
+}
+size_t _num_allocated_bytes()
+{
+    return mm.heap.number_of_bytes() + mm.mmap_list.number_of_bytes();
+}
+size_t _num_meta_data_bytes()
+{
+    return _size_meta_data() * _num_allocated_blocks();
+}
+
 int main()
 {
     int *data = (int *)smalloc(101);
@@ -449,6 +477,3 @@ int main()
     //  int *data3 = (int *)scalloc(50, sizeof(int));
     printf("data:%d,data2:%d,data3[32]:%d\n", *data, *data2, data3[32]);
 }
-
-// mark free after merge?
-// make sure bothends levitate
