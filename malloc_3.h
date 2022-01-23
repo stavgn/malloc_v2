@@ -54,8 +54,6 @@ public:
     Histogram hist;
     MetaDataList heap;
     MetaDataList mmap_list;
-    size_t allocated_byte;
-    size_t allocated_blocks;
     MallocMetaData *wilderness;
     MemoryManager();
     MallocMetaData *split(MallocMetaData *block, size_t size);
