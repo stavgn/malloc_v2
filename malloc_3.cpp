@@ -28,6 +28,11 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
 
     allocated_blocks++;
     allocated_byte -= _size_meta_data();
+
+    if (mm.wilderness == block)
+    {
+        mm.wilderness = new_block;
+    }
     return block;
 }
 
@@ -82,7 +87,8 @@ MetaDataList::MetaDataList(char type) : type(type)
         last.prev_l = &first;
         return;
     }
-    assert(0);
+    first.free = false;
+    last.free = false;
 }
 
 void MetaDataList::insert(MallocMetaData *mem)
@@ -233,7 +239,7 @@ void *smalloc(size_t size)
             block = mm.split(block, size);
         }
         mm.hist.remove(block);
-        //mm.heap.remove(block);
+        // mm.heap.remove(block);
         block->free = false;
         return (void *)(block + 1);
     }
@@ -292,9 +298,18 @@ void sfree(void *p)
     MallocMetaData *meta = (MallocMetaData *)p;
     meta--; // now points to metadata
     meta->free = true;
-    if (mm.attempt_merge(meta) == NULL)
+
+    if (_in_heap(meta))
     {
-        mm.hist.insert(meta);
+        mm.attempt_merge(meta);
+    }
+    else // mmeap
+    {
+        if (munmap((void *)meta, meta->size + _size_meta_data()) == 1)
+        {
+            perror("munmap faild:");
+        }
+        mm.mmap_list.remove(meta);
     }
 }
 
@@ -326,11 +341,16 @@ MallocMetaData *MemoryManager::attempt_merge_right(MallocMetaData *meta, bool ma
 
 MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free)
 {
+    assert(meta->free == false);
     mm.heap.remove(meta);
     mm.heap.remove(meta->prev_l);
     mm.hist.remove(meta->prev_l);
     meta->prev_l->size += meta->size + _size_meta_data();
     mm.heap.insert(meta->prev_l);
+    if (mm.wilderness == meta)
+    {
+        mm.wilderness = meta->prev_l;
+    }
     return mark_free ? _make_free(meta->prev_l) : meta->prev_l;
 }
 
@@ -341,11 +361,16 @@ MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free)
     mm.hist.remove(meta->next_l);
     meta->size += meta->next_l->size + _size_meta_data();
     mm.heap.insert(meta);
+    if (mm.wilderness == meta->next_l)
+    {
+        mm.wilderness = meta;
+    }
     return mark_free ? _make_free(meta) : meta;
 }
 
 bool _validate_neighbors(MallocMetaData *m1, MallocMetaData *m2)
 {
+    assert(m1->size + (char *)(m1 + 1) == (char *)m2);
     return (m1->size + (char *)(m1 + 1) == (char *)m2);
 }
 
@@ -366,15 +391,15 @@ void *srealloc(void *oldp, size_t size)
     }
     // attempt merge section start
     MallocMetaData *merged = meta;
-    if ((meta->prev_l->size + meta->size) >= size && meta->prev_l->free)
+    if ((meta->prev_l->size + meta->size + _size_meta_data()) >= size && meta->prev_l->free)
     {
         merged = mm.attempt_merge_left(merged, true);
     }
-    else if ((meta->next_l->size + meta->size) >= size && meta->next_l->free)
+    else if ((meta->next_l->size + meta->size + _size_meta_data()) >= size && meta->next_l->free)
     {
         merged = mm.attempt_merge_right(merged, true);
     }
-    else if ((meta->next_l->size + meta->prev_l->size + meta->size) >= size && meta->prev_l->free && meta->next_l->free)
+    else if ((meta->next_l->size + meta->prev_l->size + meta->size + 2* _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free)
     {
         merged = mm.attempt_merge(merged, true);
     }
@@ -387,7 +412,7 @@ void *srealloc(void *oldp, size_t size)
             merged = mm.split(merged, size);
         }
         merged->free = false;
-        mm.heap.remove(merged);
+        mm.hist.remove(merged);
         merged++;
         memcpy((void *)merged, oldp, size);
         return (void *)merged;
@@ -405,6 +430,7 @@ void *srealloc(void *oldp, size_t size)
 
 MallocMetaData *_make_free(MallocMetaData *meta)
 {
+    assert(meta->free == false);
     meta->free = true;
     mm.hist.insert(meta);
     return meta;
@@ -425,4 +451,4 @@ int main()
 }
 
 // mark free after merge?
-//make sure bothends levitate
+// make sure bothends levitate
