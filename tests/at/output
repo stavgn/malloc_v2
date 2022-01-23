@@ -1,0 +1,809 @@
+Info For Debuging:
+Your Metadata size is: 48
+Default block size for tests is: 2240
+Default 2 block after merge size is: 4528
+Default 3 block after merge size is: 6816
+
+RUNNING TESTS: (MALLOC PART 3)
+-----------------------------------
+        TEST NAME          STATUS
+-----------------------------------
+testInit                  : FAIL
+expected: '|F:1||U:2|'
+recived:  '|F:1|U:0||U:2|U:0|'
+allocNoFree               : FAIL
+expected: '|U:100|U:100000|U:10|'
+recived:  'num_allocated_blocks is not accurate at line: 94
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 94
+Expected: 100
+Recived:  100100
+num_meta_data_bytes is not accurate at line: 94
+Expected: 48
+Recived:  96
+num_allocated_blocks is not accurate at line: 96
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 96
+Expected: 100
+Recived:  100110
+num_meta_data_bytes is not accurate at line: 96
+Expected: 48
+Recived:  144
+num_allocated_blocks is not accurate at line: 98
+Expected: 2
+Recived:  4
+num_allocated_bytes is not accurate at line: 98
+Expected: 11000100
+Recived:  11100110
+num_meta_data_bytes is not accurate at line: 98
+Expected: 96
+Recived:  192
+|U:100|U:0|'
+allocandFree              : FAIL
+expected: '|F:2240|U:2240|U:2240|U:2240|U:2240|F:2240|U:2240|U:2240|U:2240|U:2240|F:2240|U:2240|U:2240|U:2240|U:2240|F:2240|U:2240|U:2240|U:2240|U:2240|F:2240|U:2240|U:2240|'
+recived:  'num_allocated_blocks is not accurate at line: 123
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 123
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 123
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 127
+Expected: 5
+Recived:  23
+num_allocated_bytes is not accurate at line: 127
+Expected: 11200
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 127
+Expected: 240
+Recived:  1104
+|F:2240|F:2240|F:2240|F:2240|F:2240|U:0|'
+testFreeAllAndMerge       : FAIL + CRASHED Exit Signal:6
+
+allocandFreeMerge         : FAIL
+expected: '|U:2240|F:4528|U:2240|F:4528|U:2240|F:6816|U:2240|F:4528|U:2240|F:4528|U:2240|F:6816|U:2240|U:2240|U:2240|'
+recived:  'num_allocated_blocks is not accurate at line: 158
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 158
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 158
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 160
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 160
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 160
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 162
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 162
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 162
+Expected: 48
+Recived:  1104
+num_free_blocks is not accurate at line: 162
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 162
+Expected: 0
+Recived:  2240
+num_allocated_blocks is not accurate at line: 164
+Expected: 1
+Recived:  22
+num_allocated_bytes is not accurate at line: 164
+Expected: 2240
+Recived:  51568
+num_meta_data_bytes is not accurate at line: 164
+Expected: 48
+Recived:  1056
+num_free_blocks is not accurate at line: 164
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 164
+Expected: 0
+Recived:  4528
+num_allocated_blocks is not accurate at line: 169
+Expected: 1
+Recived:  22
+num_allocated_bytes is not accurate at line: 169
+Expected: 2240
+Recived:  51568
+num_meta_data_bytes is not accurate at line: 169
+Expected: 48
+Recived:  1056
+num_free_blocks is not accurate at line: 169
+Expected: 0
+Recived:  2
+num_free_bytes is not accurate at line: 169
+Expected: 0
+Recived:  6768
+num_allocated_blocks is not accurate at line: 171
+Expected: 1
+Recived:  21
+num_allocated_bytes is not accurate at line: 171
+Expected: 2240
+Recived:  51616
+num_meta_data_bytes is not accurate at line: 171
+Expected: 48
+Recived:  1008
+num_free_blocks is not accurate at line: 171
+Expected: 0
+Recived:  2
+num_free_bytes is not accurate at line: 171
+Expected: 0
+Recived:  9056
+num_allocated_blocks is not accurate at line: 176
+Expected: 1
+Recived:  21
+num_allocated_bytes is not accurate at line: 176
+Expected: 2240
+Recived:  51616
+num_meta_data_bytes is not accurate at line: 176
+Expected: 48
+Recived:  1008
+num_free_blocks is not accurate at line: 176
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 176
+Expected: 0
+Recived:  11296
+num_allocated_blocks is not accurate at line: 178
+Expected: 1
+Recived:  21
+num_allocated_bytes is not accurate at line: 178
+Expected: 2240
+Recived:  51616
+num_meta_data_bytes is not accurate at line: 178
+Expected: 48
+Recived:  1008
+num_free_blocks is not accurate at line: 178
+Expected: 0
+Recived:  4
+num_free_bytes is not accurate at line: 178
+Expected: 0
+Recived:  13536
+num_allocated_blocks is not accurate at line: 180
+Expected: 1
+Recived:  19
+num_allocated_bytes is not accurate at line: 180
+Expected: 2240
+Recived:  51712
+num_meta_data_bytes is not accurate at line: 180
+Expected: 48
+Recived:  912
+num_free_blocks is not accurate at line: 180
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 180
+Expected: 0
+Recived:  15872
+num_allocated_blocks is not accurate at line: 160
+Expected: 1
+Recived:  19
+num_allocated_bytes is not accurate at line: 160
+Expected: 2240
+Recived:  51712
+num_meta_data_bytes is not accurate at line: 160
+Expected: 48
+Recived:  912
+num_free_blocks is not accurate at line: 160
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 160
+Expected: 0
+Recived:  15872
+num_allocated_blocks is not accurate at line: 162
+Expected: 1
+Recived:  19
+num_allocated_bytes is not accurate at line: 162
+Expected: 2240
+Recived:  51712
+num_meta_data_bytes is not accurate at line: 162
+Expected: 48
+Recived:  912
+num_free_blocks is not accurate at line: 162
+Expected: 0
+Recived:  4
+num_free_bytes is not accurate at line: 162
+Expected: 0
+Recived:  18112
+num_allocated_blocks is not accurate at line: 164
+Expected: 1
+Recived:  18
+num_allocated_bytes is not accurate at line: 164
+Expected: 2240
+Recived:  51760
+num_meta_data_bytes is not accurate at line: 164
+Expected: 48
+Recived:  864
+num_free_blocks is not accurate at line: 164
+Expected: 0
+Recived:  4
+num_free_bytes is not accurate at line: 164
+Expected: 0
+Recived:  20400
+num_allocated_blocks is not accurate at line: 169
+Expected: 1
+Recived:  18
+num_allocated_bytes is not accurate at line: 169
+Expected: 2240
+Recived:  51760
+num_meta_data_bytes is not accurate at line: 169
+Expected: 48
+Recived:  864
+num_free_blocks is not accurate at line: 169
+Expected: 0
+Recived:  5
+num_free_bytes is not accurate at line: 169
+Expected: 0
+Recived:  22640
+num_allocated_blocks is not accurate at line: 171
+Expected: 1
+Recived:  17
+num_allocated_bytes is not accurate at line: 171
+Expected: 2240
+Recived:  51808
+num_meta_data_bytes is not accurate at line: 171
+Expected: 48
+Recived:  816
+num_free_blocks is not accurate at line: 171
+Expected: 0
+Recived:  5
+num_free_bytes is not accurate at line: 171
+Expected: 0
+Recived:  24928
+num_allocated_blocks is not accurate at line: 176
+Expected: 1
+Recived:  17
+num_allocated_bytes is not accurate at line: 176
+Expected: 2240
+Recived:  51808
+num_meta_data_bytes is not accurate at line: 176
+Expected: 48
+Recived:  816
+num_free_blocks is not accurate at line: 176
+Expected: 0
+Recived:  6
+num_free_bytes is not accurate at line: 176
+Expected: 0
+Recived:  27168
+num_allocated_blocks is not accurate at line: 178
+Expected: 1
+Recived:  17
+num_allocated_bytes is not accurate at line: 178
+Expected: 2240
+Recived:  51808
+num_meta_data_bytes is not accurate at line: 178
+Expected: 48
+Recived:  816
+num_free_blocks is not accurate at line: 178
+Expected: 0
+Recived:  7
+num_free_bytes is not accurate at line: 178
+Expected: 0
+Recived:  29408
+num_allocated_blocks is not accurate at line: 180
+Expected: 1
+Recived:  15
+num_allocated_bytes is not accurate at line: 180
+Expected: 2240
+Recived:  51904
+num_meta_data_bytes is not accurate at line: 180
+Expected: 48
+Recived:  720
+num_free_blocks is not accurate at line: 180
+Expected: 0
+Recived:  6
+num_free_bytes is not accurate at line: 180
+Expected: 0
+Recived:  31744
+|U:2240|U:0|'
+testRealloc               : FAIL
+expected: '|U:4528|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|'
+recived:  'num_allocated_blocks is not accurate at line: 206
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 206
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 206
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 213
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 213
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 213
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 215
+Expected: 1
+Recived:  22
+num_allocated_bytes is not accurate at line: 215
+Expected: 4528
+Recived:  51568
+num_meta_data_bytes is not accurate at line: 215
+Expected: 48
+Recived:  1056
+|U:4528|U:0|'
+testRealloc2              : FAIL + CRASHED Exit Signal:6
+
+testWild                  : FAIL + CRASHED Exit Signal:11
+
+testSplitAndMerge         : FAIL
+expected: '|U:746|F:1446|U:2240|U:2240|U:2986|U:2986|F:3036|U:2240|U:2240|U:2986|F:1494|U:2240|U:2986|F:1494|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|U:2240|'
+recived:  'num_allocated_blocks is not accurate at line: 352
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 352
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 352
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 354
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 354
+Expected: 2240
+Recived:  51520
+num_meta_data_bytes is not accurate at line: 354
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 356
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 356
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 356
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 356
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 356
+Expected: 0
+Recived:  1446
+num_allocated_blocks is not accurate at line: 358
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 358
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 358
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 358
+Expected: 0
+Recived:  2
+num_free_bytes is not accurate at line: 358
+Expected: 0
+Recived:  3686
+num_allocated_blocks is not accurate at line: 360
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 360
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 360
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 360
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 360
+Expected: 0
+Recived:  5926
+num_allocated_blocks is not accurate at line: 362
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 362
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 362
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 362
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 362
+Expected: 0
+Recived:  5180
+num_allocated_blocks is not accurate at line: 364
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 364
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 364
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 364
+Expected: 0
+Recived:  3
+num_free_bytes is not accurate at line: 364
+Expected: 0
+Recived:  4434
+num_allocated_blocks is not accurate at line: 368
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 368
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 368
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 368
+Expected: 0
+Recived:  4
+num_free_bytes is not accurate at line: 368
+Expected: 0
+Recived:  6674
+num_allocated_blocks is not accurate at line: 370
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 370
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 370
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 370
+Expected: 0
+Recived:  4
+num_free_bytes is not accurate at line: 370
+Expected: 0
+Recived:  5928
+num_allocated_blocks is not accurate at line: 374
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 374
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 374
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 374
+Expected: 0
+Recived:  5
+num_free_bytes is not accurate at line: 374
+Expected: 0
+Recived:  8168
+num_allocated_blocks is not accurate at line: 376
+Expected: 1
+Recived:  24
+num_allocated_bytes is not accurate at line: 376
+Expected: 746
+Recived:  51472
+num_meta_data_bytes is not accurate at line: 376
+Expected: 48
+Recived:  1152
+num_free_blocks is not accurate at line: 376
+Expected: 0
+Recived:  5
+num_free_bytes is not accurate at line: 376
+Expected: 0
+Recived:  7422
+|U:746|U:0|'
+testCalloc                : FAIL
+expected: '|U:100|U:20|U:100|'
+recived:  'num_allocated_blocks is not accurate at line: 398
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 398
+Expected: 100
+Recived:  120
+num_meta_data_bytes is not accurate at line: 398
+Expected: 48
+Recived:  96
+num_allocated_blocks is not accurate at line: 406
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 406
+Expected: 100
+Recived:  220
+num_meta_data_bytes is not accurate at line: 406
+Expected: 48
+Recived:  144
+num_allocated_blocks is not accurate at line: 414
+Expected: 2
+Recived:  4
+num_allocated_bytes is not accurate at line: 414
+Expected: 1000100
+Recived:  1000220
+num_meta_data_bytes is not accurate at line: 414
+Expected: 96
+Recived:  192
+|U:100|U:0|'
+testBadArgs               : FAIL + CRASHED Exit Signal:6
+
+testReallocMMap           : FAIL + CRASHED Exit Signal:11
+
+testReallocDec            : FAIL
+expected: '|F:4480|U:2240|F:2192|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|U:4480|'
+recived:  'num_allocated_blocks is not accurate at line: 536
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 536
+Expected: 4480
+Recived:  103040
+num_meta_data_bytes is not accurate at line: 536
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 543
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 543
+Expected: 4480
+Recived:  103040
+num_meta_data_bytes is not accurate at line: 543
+Expected: 48
+Recived:  1104
+num_allocated_blocks is not accurate at line: 545
+Expected: 1
+Recived:  23
+num_allocated_bytes is not accurate at line: 545
+Expected: 4480
+Recived:  103040
+num_meta_data_bytes is not accurate at line: 545
+Expected: 48
+Recived:  1104
+|F:4480|U:0|'
+testReallocDecOverwrite   : FAIL + CRASHED Exit Signal:11
+
+testNoRecMerge            : FAIL
+expected: '|U:746|F:3734|U:2240||U:746|F:6022|'
+recived:  'num_allocated_blocks is not accurate at line: 625
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 625
+Expected: 2240
+Recived:  4480
+num_meta_data_bytes is not accurate at line: 625
+Expected: 48
+Recived:  96
+num_allocated_blocks is not accurate at line: 628
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 628
+Expected: 2240
+Recived:  6720
+num_meta_data_bytes is not accurate at line: 628
+Expected: 48
+Recived:  144
+num_allocated_blocks is not accurate at line: 630
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 630
+Expected: 2240
+Recived:  6720
+num_meta_data_bytes is not accurate at line: 630
+Expected: 48
+Recived:  144
+num_free_blocks is not accurate at line: 630
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 630
+Expected: 0
+Recived:  2240
+num_allocated_blocks is not accurate at line: 632
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 632
+Expected: 2240
+Recived:  6720
+num_meta_data_bytes is not accurate at line: 632
+Expected: 48
+Recived:  144
+num_free_blocks is not accurate at line: 632
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 632
+Expected: 0
+Recived:  2240
+|U:2240|U:0|num_allocated_blocks is not accurate at line: 639
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 639
+Expected: 2240
+Recived:  6768
+num_meta_data_bytes is not accurate at line: 639
+Expected: 48
+Recived:  96
+num_free_blocks is not accurate at line: 639
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 639
+Expected: 0
+Recived:  4528
+|U:2240|U:0|'
+testReallocWildLikePiazza : FAIL
+expected: '|F:8960|U:2240|U:6720|'
+recived:  'num_allocated_blocks is not accurate at line: 654
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 654
+Expected: 8960
+Recived:  11200
+num_meta_data_bytes is not accurate at line: 654
+Expected: 48
+Recived:  96
+num_allocated_blocks is not accurate at line: 656
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 656
+Expected: 8960
+Recived:  13440
+num_meta_data_bytes is not accurate at line: 656
+Expected: 48
+Recived:  144
+num_allocated_blocks is not accurate at line: 659
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 659
+Expected: 8960
+Recived:  15680
+num_meta_data_bytes is not accurate at line: 659
+Expected: 48
+Recived:  192
+num_allocated_blocks is not accurate at line: 661
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 661
+Expected: 8960
+Recived:  15680
+num_meta_data_bytes is not accurate at line: 661
+Expected: 48
+Recived:  192
+num_allocated_blocks is not accurate at line: 663
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 663
+Expected: 8960
+Recived:  15680
+num_meta_data_bytes is not accurate at line: 663
+Expected: 48
+Recived:  192
+num_free_blocks is not accurate at line: 663
+Expected: 1
+Recived:  2
+num_free_bytes is not accurate at line: 663
+Expected: 8960
+Recived:  11200
+num_allocated_blocks is not accurate at line: 668
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 668
+Expected: 8960
+Recived:  17920
+num_meta_data_bytes is not accurate at line: 668
+Expected: 48
+Recived:  144
+|F:8960|U:0|'
+testReallocWilderness2    : FAIL
+expected: '|U:2240|F:6720|U:4480|U:4528||U:2240|F:6720|U:4480|U:6720|'
+recived:  'num_allocated_blocks is not accurate at line: 690
+Expected: 1
+Recived:  2
+num_allocated_bytes is not accurate at line: 690
+Expected: 2240
+Recived:  8960
+num_meta_data_bytes is not accurate at line: 690
+Expected: 48
+Recived:  96
+num_allocated_blocks is not accurate at line: 692
+Expected: 1
+Recived:  3
+num_allocated_bytes is not accurate at line: 692
+Expected: 2240
+Recived:  13440
+num_meta_data_bytes is not accurate at line: 692
+Expected: 48
+Recived:  144
+num_allocated_blocks is not accurate at line: 694
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 694
+Expected: 2240
+Recived:  15680
+num_meta_data_bytes is not accurate at line: 694
+Expected: 48
+Recived:  192
+num_allocated_blocks is not accurate at line: 696
+Expected: 1
+Recived:  5
+num_allocated_bytes is not accurate at line: 696
+Expected: 2240
+Recived:  17920
+num_meta_data_bytes is not accurate at line: 696
+Expected: 48
+Recived:  240
+num_allocated_blocks is not accurate at line: 702
+Expected: 1
+Recived:  5
+num_allocated_bytes is not accurate at line: 702
+Expected: 2240
+Recived:  17920
+num_meta_data_bytes is not accurate at line: 702
+Expected: 48
+Recived:  240
+num_allocated_blocks is not accurate at line: 705
+Expected: 1
+Recived:  5
+num_allocated_bytes is not accurate at line: 705
+Expected: 2240
+Recived:  17920
+num_meta_data_bytes is not accurate at line: 705
+Expected: 48
+Recived:  240
+num_free_blocks is not accurate at line: 705
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 705
+Expected: 0
+Recived:  2240
+num_allocated_blocks is not accurate at line: 708
+Expected: 1
+Recived:  5
+num_allocated_bytes is not accurate at line: 708
+Expected: 2240
+Recived:  17920
+num_meta_data_bytes is not accurate at line: 708
+Expected: 48
+Recived:  240
+num_free_blocks is not accurate at line: 708
+Expected: 0
+Recived:  2
+num_free_bytes is not accurate at line: 708
+Expected: 0
+Recived:  8960
+num_allocated_blocks is not accurate at line: 711
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 711
+Expected: 2240
+Recived:  17968
+num_meta_data_bytes is not accurate at line: 711
+Expected: 48
+Recived:  192
+num_free_blocks is not accurate at line: 711
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 711
+Expected: 0
+Recived:  6720
+|U:2240|U:0|num_allocated_blocks is not accurate at line: 725
+Expected: 1
+Recived:  4
+num_allocated_bytes is not accurate at line: 725
+Expected: 2240
+Recived:  20160
+num_meta_data_bytes is not accurate at line: 725
+Expected: 48
+Recived:  192
+num_free_blocks is not accurate at line: 725
+Expected: 0
+Recived:  1
+num_free_bytes is not accurate at line: 725
+Expected: 0
+Recived:  6720
+|U:2240|U:0|'
+mergeVariations           : FAIL + CRASHED Exit Signal:11
+
+-----------------------------------
+Total Run Time: 48.1304ms
