@@ -13,8 +13,6 @@
 #define MIN_SPLIT 128
 #define MIN_MMAP (128 * 1024) //128KB
 
-#include <unistd.h>
-
 class MallocMetaData
 {
 public:
@@ -60,13 +58,20 @@ public:
     size_t allocated_blocks;
     MallocMetaData *wilderness;
     MemoryManager();
-    MallocMetaData *split(MallocMetaData *block,size_t size);
+    MallocMetaData *split(MallocMetaData *block, size_t size);
+    MallocMetaData *attempt_merge(MallocMetaData *block, bool mark_free = true);
+    MallocMetaData *attempt_merge_left(MallocMetaData *block, bool mark_free = true);
+    MallocMetaData *attempt_merge_right(MallocMetaData *block, bool mark_free = true);
 };
 
 bool _shoul_split(MallocMetaData *block, size_t size);
 bool _in_heap(MallocMetaData *block);
 size_t __num_of_nodes(MallocMetaData *list_head);
 size_t __num_of_byts_in_list(MallocMetaData *list_head);
+MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free);
+MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free);
+bool _validate_neighbors(MallocMetaData *m1, MallocMetaData *m2);
+MallocMetaData *_make_free(MallocMetaData *meta);
 size_t _num_free_blocks();
 size_t _num_free_bytes();
 size_t _num_allocated_blocks();

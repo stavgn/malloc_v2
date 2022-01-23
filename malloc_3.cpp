@@ -19,6 +19,7 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
 
     MallocMetaData *new_block = (MallocMetaData *)((char *)(block + 1) + size);
     *new_block = MallocMetaData(block->size - size - _size_meta_data());
+    new_block->free = true;
     block->size = size;
     hist.insert(block);
     heap.insert(block);
@@ -232,7 +233,7 @@ void *smalloc(size_t size)
             block = mm.split(block, size);
         }
         mm.hist.remove(block);
-        mm.heap.remove(block);
+        //mm.heap.remove(block);
         block->free = false;
         return (void *)(block + 1);
     }
@@ -263,6 +264,7 @@ void *smalloc(size_t size)
         mm.wilderness = block;
         mm.allocated_blocks++;
         mm.allocated_byte += size;
+        mm.heap.insert(block);
         return (void *)(block + 1);
     }
 }
@@ -281,13 +283,146 @@ void *scalloc(size_t num, size_t size)
     return memset(ptr, 0, size * num);
 }
 
+void sfree(void *p)
+{
+    if (p == NULL)
+    {
+        return;
+    }
+    MallocMetaData *meta = (MallocMetaData *)p;
+    meta--; // now points to metadata
+    meta->free = true;
+    if (mm.attempt_merge(meta) == NULL)
+    {
+        mm.hist.insert(meta);
+    }
+}
+
+MallocMetaData *MemoryManager::attempt_merge(MallocMetaData *meta, bool mark_free)
+{
+    MallocMetaData *merged = attempt_merge_right(attempt_merge_left(meta, false), false);
+    return mark_free ? _make_free(merged) : merged;
+}
+
+MallocMetaData *MemoryManager::attempt_merge_left(MallocMetaData *meta, bool mark_free)
+{
+    MallocMetaData *merged = meta;
+    if (_validate_neighbors(merged->prev_l, meta) && merged->prev_l->free)
+    {
+        merged = _merge_left(meta, mark_free);
+    }
+    return merged;
+}
+
+MallocMetaData *MemoryManager::attempt_merge_right(MallocMetaData *meta, bool mark_free)
+{
+    MallocMetaData *merged = meta;
+    if (_validate_neighbors(merged, merged->next_l) && merged->next_l->free)
+    {
+        merged = _merge_right(merged, mark_free);
+    }
+    return merged;
+}
+
+MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free)
+{
+    mm.heap.remove(meta);
+    mm.heap.remove(meta->prev_l);
+    mm.hist.remove(meta->prev_l);
+    meta->prev_l->size += meta->size + _size_meta_data();
+    mm.heap.insert(meta->prev_l);
+    return mark_free ? _make_free(meta->prev_l) : meta->prev_l;
+}
+
+MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free)
+{
+    mm.heap.remove(meta);
+    mm.heap.remove(meta->next_l);
+    mm.hist.remove(meta->next_l);
+    meta->size += meta->next_l->size + _size_meta_data();
+    mm.heap.insert(meta);
+    return mark_free ? _make_free(meta) : meta;
+}
+
+bool _validate_neighbors(MallocMetaData *m1, MallocMetaData *m2)
+{
+    return (m1->size + (char *)(m1 + 1) == (char *)m2);
+}
+
+void *srealloc(void *oldp, size_t size)
+{
+    if ((size == 0) || (size > BIG_NUM))
+    {
+        return NULL;
+    }
+    if (oldp == NULL)
+    {
+        return smalloc(size);
+    }
+    MallocMetaData *meta = (MallocMetaData *)oldp - 1;
+    if (meta->size >= size)
+    {
+        return oldp;
+    }
+    // attempt merge section start
+    MallocMetaData *merged = meta;
+    if ((meta->prev_l->size + meta->size) >= size && meta->prev_l->free)
+    {
+        merged = mm.attempt_merge_left(merged, true);
+    }
+    else if ((meta->next_l->size + meta->size) >= size && meta->next_l->free)
+    {
+        merged = mm.attempt_merge_right(merged, true);
+    }
+    else if ((meta->next_l->size + meta->prev_l->size + meta->size) >= size && meta->prev_l->free && meta->next_l->free)
+    {
+        merged = mm.attempt_merge(merged, true);
+    }
+    // attempt merge section end
+
+    if (merged->size >= size)
+    {
+        if (_shoul_split(merged, size))
+        {
+            merged = mm.split(merged, size);
+        }
+        merged->free = false;
+        mm.heap.remove(merged);
+        merged++;
+        memcpy((void *)merged, oldp, size);
+        return (void *)merged;
+    }
+
+    void *ptr = smalloc(size);
+    if (ptr == NULL)
+    {
+        return NULL;
+    }
+    memcpy(ptr, oldp, size);
+    sfree(oldp);
+    return ptr;
+}
+
+MallocMetaData *_make_free(MallocMetaData *meta)
+{
+    meta->free = true;
+    mm.hist.insert(meta);
+    return meta;
+}
+
 int main()
 {
-    int* data = (int*)smalloc(100);
+    int *data = (int *)smalloc(101);
     *data = 100;
-    int* data2 = (int*)smalloc(10000000);
+    int *data2 = (int *)smalloc(102);
     *data2 = 100;
-    int *data3 = (int*)scalloc(50,sizeof(int));
-    printf("data:%d,data2:%d,data3[32]:%d\n",*data,*data2,data3[32]);
-
+    int *data3 = (int *)smalloc(103);
+    sfree(data2);
+    sfree(data3);
+    srealloc(data, 150);
+    //  int *data3 = (int *)scalloc(50, sizeof(int));
+    printf("data:%d,data2:%d,data3[32]:%d\n", *data, *data2, data3[32]);
 }
+
+// mark free after merge?
+//make sure bothends levitate
