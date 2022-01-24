@@ -1102,7 +1102,7 @@ int main()
 
 	for (int i = 0; i < NUM_FUNC; ++i)
 	{
-		// if (i != 17)
+		// if (i != 1)
 		// 	continue;
 		pid_t pid = fork();
 		if (pid == 0)

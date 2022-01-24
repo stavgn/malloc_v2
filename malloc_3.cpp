@@ -201,7 +201,7 @@ bool _in_heap(MallocMetaData *block)
 bool _shoul_split(MallocMetaData *block, size_t size)
 {
     assert(block != NULL);
-    return ((size < block->size) && (block->size - size - _size_meta_data() >= MIN_SPLIT));
+    return ((size + _size_meta_data()< block->size) && (block->size - size - _size_meta_data() >= MIN_SPLIT));
 }
 
 size_t _size_meta_data()
