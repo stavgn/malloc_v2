@@ -1,4 +1,4 @@
-#include "malloc_3.h"
+#include "malloc_4.h"
 
 MemoryManager mm;
 
@@ -529,16 +529,14 @@ size_t _num_meta_data_bytes()
     return _size_meta_data() * _num_allocated_blocks();
 }
 
+size_t _round_to_8(size_t size)
+{
+    size_t efe = size + _size_meta_data();
+    return efe + (efe%8);
+}
+
 int main()
 {
-    int *data = (int *)smalloc(101);
-    *data = 100;
-    int *data2 = (int *)smalloc(102);
-    *data2 = 100;
-    int *data3 = (int *)smalloc(103);
-    sfree(data2);
-    sfree(data3);
-    srealloc(data, 150);
-    //  int *data3 = (int *)scalloc(50, sizeof(int));
-    printf("data:%d,data2:%d,data3[32]:%d\n", *data, *data2, data3[32]);
+    printf("size_t size %lu\nbool free %lu\nMallocMetaData* %lu\nMallocMetaData(size_t size = 0):%lu",sizeof(size_t),sizeof(bool),sizeof(MallocMetaData*),sizeof(MallocMetaData()));
+    printf("\n\nTOtal:%lu\n",sizeof(MallocMetaData));
 }

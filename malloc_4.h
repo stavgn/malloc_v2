@@ -1,5 +1,5 @@
-#ifndef MALLOC_3_H
-#define MALLOC_3_H
+#ifndef MALLOC_4_H
+#define MALLOC_4_H
 
 #include <unistd.h>
 #include <assert.h>
@@ -62,6 +62,7 @@ public:
     MallocMetaData *attempt_merge_right(MallocMetaData *block, bool mark_free = true);
 };
 
+size_t _round_to_8(size_t size);
 bool _shoul_split(MallocMetaData *block, size_t size);
 bool _in_heap(MallocMetaData *block);
 size_t __num_of_nodes(MallocMetaData *list_head);
@@ -78,10 +79,6 @@ size_t _num_allocated_blocks();
 size_t _num_allocated_bytes();
 size_t _size_meta_data();
 size_t _num_meta_data_bytes();
-MallocMetaData *_find_slot(size_t size);
-void _remove_node_from_link(MallocMetaData *node);
-void _insert_data_to_used_link(MallocMetaData *node);
-void _insert_data_to_free_link(MallocMetaData *node);
 void *smalloc(size_t size);
 void *scalloc(size_t num, size_t size);
 void sfree(void *p);
