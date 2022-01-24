@@ -12,14 +12,19 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
     assert((block->size - size - _size_meta_data()) >= MIN_SPLIT);
     assert(size < block->size);
     assert(_in_heap(block));
-    hist.remove(block);
+    if (block->free)
+    {
+        hist.remove(block);
+    }
     heap.remove(block);
 
     MallocMetaData *new_block = (MallocMetaData *)((char *)(block + 1) + size);
     *new_block = MallocMetaData(block->size - size - _size_meta_data());
-    new_block->free = true;
     block->size = size;
-    hist.insert(block);
+    if (block->free)
+    {
+        hist.insert(block);
+    }
     heap.insert(block);
     hist.insert(new_block);
     heap.insert(new_block);
@@ -28,6 +33,9 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
     {
         mm.wilderness = new_block;
     }
+    new_block->free = false;
+    mm.attempt_merge_right(new_block, true);
+    new_block->free = true;
     return block;
 }
 
@@ -347,15 +355,16 @@ MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free)
 MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free)
 {
     assert(meta->free == false);
+    if (mm.wilderness == meta->next_l)
+    {
+        mm.wilderness = meta;
+    }
     mm.heap.remove(meta);
     mm.heap.remove(meta->next_l);
     mm.hist.remove(meta->next_l);
     meta->size += meta->next_l->size + _size_meta_data();
     mm.heap.insert(meta);
-    if (mm.wilderness == meta->next_l)
-    {
-        mm.wilderness = meta;
-    }
+
     return mark_free ? _make_free(meta) : meta;
 }
 
@@ -376,13 +385,13 @@ void *srealloc(void *oldp, size_t size)
         return smalloc(size);
     }
     MallocMetaData *meta = (MallocMetaData *)oldp - 1;
-    if (meta->size >= size)
-    {
-        return oldp;
-    }
 
     if (!_in_heap(meta))
     {
+        if (meta->size == size)
+        {
+            return oldp;
+        }
         assert(size > MIN_MMAP);
         void *ptr = smalloc(size); // should mmap
         if (ptr == NULL)
@@ -393,6 +402,15 @@ void *srealloc(void *oldp, size_t size)
         memcpy(ptr, oldp, min);
         sfree(oldp);
         return ptr;
+    }
+
+    if (meta->size >= size)
+    {
+        if (_shoul_split(meta, size))
+        {
+            meta = mm.split(meta, size);
+        }
+        return oldp;
     }
 
     // attempt merge section start
@@ -422,7 +440,8 @@ void *srealloc(void *oldp, size_t size)
         merged->free = false;
         mm.hist.remove(merged);
         merged++;
-        memcpy((void *)merged, oldp, size);
+        size_t min = size < meta->size ? size : meta->size;
+        memcpy((void *)merged, oldp, min);
         return (void *)merged;
     }
     else if (mm.wilderness == merged)
@@ -432,11 +451,15 @@ void *srealloc(void *oldp, size_t size)
         {
             return NULL;
         }
-        merged->free = false;
+        if (merged->free)
+        {
+            merged->free = false;
+            mm.hist.remove(merged);
+        }
         mm.wilderness->size += delta;
-        mm.hist.remove(merged);
         merged++;
-        memcpy((void *)merged, oldp, size);
+        size_t min = size < meta->size ? size : meta->size;
+        memcpy((void *)merged, oldp, min);
         return (void *)merged;
     }
 
@@ -445,7 +468,8 @@ void *srealloc(void *oldp, size_t size)
     {
         return NULL;
     }
-    memcpy(ptr, oldp, size);
+    size_t min = size < meta->size ? size : meta->size;
+    memcpy(ptr, oldp, min);
     sfree(oldp);
     return ptr;
 }
