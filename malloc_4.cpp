@@ -529,16 +529,16 @@ size_t _num_meta_data_bytes()
     return _size_meta_data() * _num_allocated_blocks();
 }
 
-// int main()
-// {
-//     int *data = (int *)smalloc(101);
-//     *data = 100;
-//     int *data2 = (int *)smalloc(102);
-//     *data2 = 100;
-//     int *data3 = (int *)smalloc(103);
-//     sfree(data2);
-//     sfree(data3);
-//     srealloc(data, 150);
-//     //  int *data3 = (int *)scalloc(50, sizeof(int));
-//     printf("data:%d,data2:%d,data3[32]:%d\n", *data, *data2, data3[32]);
-// }
+int main()
+{
+    int *data = (int *)smalloc(101);
+    *data = 100;
+    int *data2 = (int *)smalloc(102);
+    *data2 = 100;
+    int *data3 = (int *)smalloc(103);
+    sfree(data2);
+    sfree(data3);
+    srealloc(data, 150);
+    //  int *data3 = (int *)scalloc(50, sizeof(int));
+    printf("data:%d,data2:%d,data3[32]:%d\n", *data, *data2, data3[32]);
+}
