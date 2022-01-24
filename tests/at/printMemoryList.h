@@ -11,6 +11,8 @@
 //void printMemory4(void* start);
 
 #include <iostream>
+#include "malloc_3.h"
+extern MemoryManager mm;
 
 typedef struct stats_t {
 	size_t num_free_blocks = 0;

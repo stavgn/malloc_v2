@@ -33,10 +33,10 @@ class Metadata3
 public:
     size_t size;
     bool free;
-    Metadata3 *next_l;
-    Metadata3 *prev_l;
     Metadata3 *next_s;
     Metadata3 *prev_s;
+    Metadata3 *next_l;
+    Metadata3 *prev_l;
     Metadata3(size_t size = 0);
 };
 
@@ -978,6 +978,8 @@ int main() {
 	auto t1 = high_resolution_clock::now();
 
 	for (int i = 0 ; i < NUM_FUNC ; ++i) {
+		// if(i!=11)
+		// 	continue;
 		pid_t pid = fork();
 		if (pid == 0) {
 			ans = checkFunc(functions[i], allocations, function_names[i]);

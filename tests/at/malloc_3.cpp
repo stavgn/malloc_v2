@@ -294,11 +294,11 @@ void sfree(void *p)
     }
     else // mmeap
     {
+        mm.mmap_list.remove(meta);
         if (munmap((void *)meta, meta->size + _size_meta_data()) == 1)
         {
             perror("munmap faild:");
         }
-        mm.mmap_list.remove(meta);
     }
 }
 
@@ -383,14 +383,14 @@ void *srealloc(void *oldp, size_t size)
 
     if (!_in_heap(meta))
     {
-        printf("I'm here!\n");
         assert(size > MIN_MMAP);
-        void *ptr = smalloc(size); //should mmap
+        void *ptr = smalloc(size); // should mmap
         if (ptr == NULL)
         {
             return NULL;
         }
-        memcpy(ptr, oldp, size);
+        size_t min = size < meta->size ? size : meta->size;
+        memcpy(ptr, oldp, min);
         sfree(oldp);
         return ptr;
     }
