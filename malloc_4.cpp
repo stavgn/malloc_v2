@@ -5,12 +5,15 @@ MemoryManager mm;
 MemoryManager::MemoryManager() : heap('l')
 {
     wilderness = NULL;
+    size_t start = (size_t)sbrk(0);
+    size_t aligned = _rount_8(start);
+    mm.align_bytes = aligned - start;
+    sbrk(mm.align_bytes);
 }
 
 MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
 {
-    assert((block->size - size - _size_meta_data()) >= MIN_SPLIT);
-    assert(size < block->size);
+    size_t efe_s = efe_size(size);
     assert(_in_heap(block));
     if (block->free)
     {
@@ -18,9 +21,9 @@ MallocMetaData *MemoryManager::split(MallocMetaData *block, size_t size)
     }
     heap.remove(block);
 
-    MallocMetaData *new_block = (MallocMetaData *)((char *)(block + 1) + size);
-    *new_block = MallocMetaData(block->size - size - _size_meta_data());
-    block->size = size;
+    MallocMetaData *new_block = (MallocMetaData *)((char *)block + efe_s);
+    *new_block = MallocMetaData(block->size - _rount_8(size) - _efe_meta_data());
+    block->size = _rount_8(size);
     if (block->free)
     {
         hist.insert(block);
@@ -151,6 +154,7 @@ void MetaDataList::remove(MallocMetaData *mem)
 
 MallocMetaData::MallocMetaData(size_t size) : size(size)
 {
+    padding = _get_padding();
 }
 
 size_t MetaDataList::number_of_elements()
@@ -179,14 +183,14 @@ size_t MetaDataList::number_of_bytes()
     {
         for (MallocMetaData *iter = first.next_s; iter != &last; iter = iter->next_s)
         {
-            counter += iter->size;
+            counter += iter->size + _get_padding();
         }
     }
     else if (type == 'l')
     {
         for (MallocMetaData *iter = first.next_l; iter != &last; iter = iter->next_l)
         {
-            counter += iter->size;
+            counter += iter->size + _get_padding();
         }
     }
     return counter;
@@ -201,8 +205,9 @@ bool _in_heap(MallocMetaData *block)
 bool _shoul_split(MallocMetaData *block, size_t size)
 {
     assert(block != NULL);
-    size_t left_over = block->size - size - _size_meta_data();
-    return ((size + _size_meta_data() < block->size) && ((left_over % 8) == 0) &&(left_over>= MIN_SPLIT));
+    size_t left_over = block->size - efe_size(size);
+    assert((left_over % 8) == 0);
+    return ((efe_size(size) + _efe_meta_data() < block->size) && (left_over - _efe_meta_data() >= MIN_SPLIT));
 }
 
 size_t _size_meta_data()
@@ -213,8 +218,8 @@ size_t _size_meta_data()
 
 void *smalloc(size_t size)
 {
-    size_t user_data = efe_size(size) - _size_meta_data();
-    if ((size == 0) || (efe_size(size) > BIG_NUM))
+    size_t user_data = _rount_8(size);
+    if ((size == 0) || (size > BIG_NUM))
     {
         return NULL;
     }
@@ -231,7 +236,7 @@ void *smalloc(size_t size)
         *block = MallocMetaData(user_data);
         mm.mmap_list.insert(block);
         block->free = false;
-        return (void *)(block + 1);
+        return (void *)((char *)block + _efe_meta_data());
     }
 
     block = mm.hist.search_block(user_data);
@@ -244,7 +249,7 @@ void *smalloc(size_t size)
         mm.hist.remove(block);
         // mm.heap.remove(block);
         block->free = false;
-        return (void *)(block + 1);
+        return (void *)((char *)block + _efe_meta_data());
     }
 
     else if ((mm.wilderness != NULL) && (mm.wilderness->free))
@@ -258,7 +263,7 @@ void *smalloc(size_t size)
         mm.hist.remove(mm.wilderness);
         mm.wilderness->size += delta;
         mm.wilderness->free = false;
-        return (void *)(mm.wilderness + 1);
+        return (void *)((char *)mm.wilderness + _efe_meta_data());
     }
     else
     {
@@ -271,22 +276,22 @@ void *smalloc(size_t size)
         block->free = false;
         mm.wilderness = block;
         mm.heap.insert(block);
-        return (void *)(block + 1);
+        return (void *)((char *)block + _efe_meta_data());
     }
 }
 
 void *scalloc(size_t num, size_t size)
 {
-    if (size == 0 || efe_size(size * num) > BIG_NUM)
+    if (size == 0 || (size * num) > BIG_NUM)
     {
         return NULL;
     }
-    void *ptr = smalloc(efe_size(size * num));
+    void *ptr = smalloc(size * num);
     if (ptr == NULL)
     {
         return NULL;
     }
-    return memset(ptr, 0, efe_size(size * num));
+    return memset(ptr, 0, size * num);
 }
 
 void sfree(void *p)
@@ -344,7 +349,7 @@ MallocMetaData *_merge_left(MallocMetaData *meta, bool mark_free)
     mm.heap.remove(meta);
     mm.heap.remove(meta->prev_l);
     mm.hist.remove(meta->prev_l);
-    meta->prev_l->size += meta->size + _size_meta_data();
+    meta->prev_l->size += efe_size(meta->size);
     meta->prev_l->free = false;
     mm.heap.insert(meta->prev_l);
     if (mm.wilderness == meta)
@@ -364,7 +369,7 @@ MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free)
     mm.heap.remove(meta);
     mm.heap.remove(meta->next_l);
     mm.hist.remove(meta->next_l);
-    meta->size += meta->next_l->size + _size_meta_data();
+    meta->size += efe_size(meta->next_l->size);
     mm.heap.insert(meta);
 
     return mark_free ? _make_free(meta) : meta;
@@ -372,13 +377,13 @@ MallocMetaData *_merge_right(MallocMetaData *meta, bool mark_free)
 
 bool _validate_neighbors(MallocMetaData *m1, MallocMetaData *m2)
 {
-    assert(m1->size + (char *)(m1 + 1) == (char *)m2);
-    return (m1->size + (char *)(m1 + 1) == (char *)m2);
+    assert((char *)m1 + efe_size(m1->size) == (char *)m2);
+    return ((char *)m1 + efe_size(m1->size) == (char *)m2);
 }
 
 void *srealloc(void *oldp, size_t size)
 {
-    if ((size == 0) || (efe_size(size) > BIG_NUM))
+    if ((size == 0) || (size > BIG_NUM))
     {
         return NULL;
     }
@@ -386,15 +391,16 @@ void *srealloc(void *oldp, size_t size)
     {
         return smalloc(size);
     }
-    MallocMetaData *meta = (MallocMetaData *)oldp - 1;
+    size = _rount_8(size);
+    MallocMetaData *meta = (MallocMetaData *)((char *)oldp - _efe_meta_data());
 
+    if (meta->size == _rount_8(size))
+    {
+        return oldp;
+    }
     if (!_in_heap(meta))
     {
-        if (meta->size == size)
-        {
-            return oldp;
-        }
-        assert(size > MIN_MMAP);
+        assert(size >= MIN_MMAP);
         void *ptr = smalloc(size); // should mmap
         if (ptr == NULL)
         {
@@ -419,15 +425,15 @@ void *srealloc(void *oldp, size_t size)
     bool w_l = is_wilderness_in_reach_left(meta);
     bool w_r = is_wilderness_in_reach_right(meta);
     MallocMetaData *merged = meta;
-    if (((meta->prev_l->size + meta->size + _size_meta_data()) >= size && meta->prev_l->free) || w_l)
+    if (((efe_size(meta->prev_l->size) + meta->size) >= size && meta->prev_l->free) || w_l)
     {
         merged = mm.attempt_merge_left(merged, true);
     }
-    else if ((meta->next_l->size + meta->size + _size_meta_data()) >= size && meta->next_l->free)
+    else if ((efe_size(meta->next_l->size) + meta->size) >= size && meta->next_l->free)
     {
         merged = mm.attempt_merge_right(merged, true);
     }
-    else if (((meta->next_l->size + meta->prev_l->size + meta->size + 2 * _size_meta_data()) >= size && meta->prev_l->free && meta->next_l->free) || w_r)
+    else if (((efe_size(meta->prev_l->size) + efe_size(meta->next_l->size) + meta->size >= size) && meta->prev_l->free && meta->next_l->free) || w_r)
     {
         merged = mm.attempt_merge(merged, true);
     }
@@ -441,7 +447,7 @@ void *srealloc(void *oldp, size_t size)
         }
         merged->free = false;
         mm.hist.remove(merged);
-        merged++;
+        merged = (MallocMetaData *)((char *)merged + _efe_meta_data());
         size_t min = size < meta->size ? size : meta->size;
         memcpy((void *)merged, oldp, min);
         return (void *)merged;
@@ -459,18 +465,18 @@ void *srealloc(void *oldp, size_t size)
             mm.hist.remove(merged);
         }
         mm.wilderness->size += delta;
-        merged++;
+        merged = (MallocMetaData *)((char *)merged + _efe_meta_data());
         size_t min = size < meta->size ? size : meta->size;
         memcpy((void *)merged, oldp, min);
         return (void *)merged;
     }
 
-    void *ptr = smalloc(efe_size(size));
+    void *ptr = smalloc(size);
     if (ptr == NULL)
     {
         return NULL;
     }
-    size_t min = efe_size(size) < meta->size ? efe_size(size) : meta->size;
+    size_t min = size < meta->size ? size : meta->size;
     memcpy(ptr, oldp, min);
     sfree(oldp);
     return ptr;
@@ -524,7 +530,7 @@ size_t _num_allocated_blocks()
 }
 size_t _num_allocated_bytes()
 {
-    return mm.heap.number_of_bytes() + mm.mmap_list.number_of_bytes();
+    return mm.heap.number_of_bytes() + mm.mmap_list.number_of_bytes()  + mm.align_bytes;
 }
 size_t _num_meta_data_bytes()
 {
@@ -533,17 +539,30 @@ size_t _num_meta_data_bytes()
 
 size_t _rount_8(size_t size)
 {
-   if ((size%8) == 0)
+    if ((size % 8) == 0)
     {
         return size;
     }
-    return size + 8 - (size%8);
+    return size + 8 - (size % 8);
 }
-
 
 size_t efe_size(size_t size)
 {
-    return _rount_8(size + _size_meta_data());
+    return _rount_8(size) + _efe_meta_data();
+}
+
+size_t _efe_meta_data()
+{
+    return _rount_8(_size_meta_data());
+}
+
+size_t _get_padding()
+{
+    if ((_size_meta_data() % 8) == 0)
+    {
+        return 0;
+    }
+    return 8 - (_size_meta_data() % 8);
 }
 
 // int main()
