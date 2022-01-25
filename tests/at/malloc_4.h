@@ -23,6 +23,7 @@ public:
     MallocMetaData *next_l;
     MallocMetaData *prev_l;
     MallocMetaData(size_t size = 0);
+    size_t padding;
 };
 
 class MetaDataList
@@ -55,13 +56,16 @@ public:
     MetaDataList heap;
     MetaDataList mmap_list;
     MallocMetaData *wilderness;
+    size_t align_bytes;
     MemoryManager();
     MallocMetaData *split(MallocMetaData *block, size_t size);
     MallocMetaData *attempt_merge(MallocMetaData *block, bool mark_free = true);
     MallocMetaData *attempt_merge_left(MallocMetaData *block, bool mark_free = true);
     MallocMetaData *attempt_merge_right(MallocMetaData *block, bool mark_free = true);
 };
+size_t _get_padding();
 size_t _rount_8(size_t size);
+size_t _efe_meta_data();
 size_t efe_size(size_t size);
 bool _shoul_split(MallocMetaData *block, size_t size);
 bool _in_heap(MallocMetaData *block);

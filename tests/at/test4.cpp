@@ -6,7 +6,7 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <chrono>
-#include "printMemoryList.h"
+#include "printMemoryList4.h"
 #include "malloc_4.h"
 #include "colors.h"
 
@@ -34,13 +34,14 @@
 class Metadata4
 {
 public:
-	size_t size;
-	bool free;
-	Metadata4 *next_s;
-	Metadata4 *prev_s;
-	Metadata4 *next_l;
-	Metadata4 *prev_l;
-	Metadata4(size_t size = 0);
+    size_t size;
+    bool free;
+    Metadata4 *next_s;
+    Metadata4 *prev_s;
+    Metadata4 *next_l;
+    Metadata4 *prev_l;
+    Metadata4(size_t size = 0);
+    size_t padding;
 };
 
 ///////////////////////////////////////////////////
@@ -83,7 +84,8 @@ void checkStats(size_t bytes_mmap, int blocks_mmap, int line_number);
 
 int _getOffsetFromMetadata(void *address) {
 	Metadata4 *m = (Metadata4 *) ((char *) address - size_of_metadata);\
-    return (int) m->offset;
+	return 0;
+    // return (int) m->padding;
 }
 
 
@@ -667,7 +669,7 @@ std::string testReallocWilderness(void *array[MAX_ALLOC]) {
 void *getMemoryStart() {
 	void *first = smalloc(1);
 	if (!first) { return nullptr; }
-	void *start = (char *) first - _size_meta_data();
+	void *start = (char *) first - _efe_meta_data();
 	sfree(first);
 	return start;
 }
@@ -752,7 +754,7 @@ void initTests() {
 	resetStats(current_stats);
 	DO_MALLOC(memory_start_addr = getMemoryStart());
 	checkStats(0, 0, __LINE__);
-	size_of_metadata = _size_meta_data();
+	size_of_metadata = _efe_meta_data();
 	default_block_size = 4 * (size_of_metadata + (4 * 128)); // big enough to split a lot
 	if (default_block_size * 3 + size_of_metadata * 2 >= 128 * 1024) {
 		default_block_size /= 2;
@@ -824,6 +826,8 @@ int main() {
 	auto t1 = high_resolution_clock::now();
 
 	for (int i = 0 ; i < NUM_FUNC ; ++i) {
+		// if (i!=8)
+		// 	continue;
 		pid_t pid = fork();
 		if (pid == 0) {
 			ans = checkFunc(functions[i], allocations, function_names[i]);

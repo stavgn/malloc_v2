@@ -392,7 +392,7 @@ void *srealloc(void *oldp, size_t size)
         {
             return oldp;
         }
-        assert(size > MIN_MMAP);
+        assert(size >= MIN_MMAP);
         void *ptr = smalloc(size); // should mmap
         if (ptr == NULL)
         {

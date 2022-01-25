@@ -11,7 +11,7 @@
 //void printMemory4(void* start);
 
 #include <iostream>
-#include "malloc_3.h"
+#include "malloc_4.h"
 
 typedef struct stats_t {
 	size_t num_free_blocks = 0;
