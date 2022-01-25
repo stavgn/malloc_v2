@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #include <chrono>
 #include "printMemoryList.h"
-#include "malloc_4.h"
+#include "malloc_3.h"
 #include "colors.h"
 
 /////////////////////////////////////////////////////
